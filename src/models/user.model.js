@@ -16,26 +16,37 @@ const userSchema =new mongoose.Schema({
         required:[true,"Name Is Required"],
     },
     password:{
-        type:password,
+        type:String,
         required:true,
         minLength:[6,"Password Must greater Than 6 Characters"],
         select:false
+    },
+    systemUser:{
+        type:Boolean,
+        default:false,
+        immutable:true,
+        select:false 
     }
 },{timeStamps:true});
 
 
-userSchema.pre('Save',async()=>{
-    if(!isModified(this.password)){
-        return next();
-    }
 
+userSchema.pre('save',async function(){
+    console.log("This ",this);
+    
+    console.log("Password :",this.password," Is modified :",this.isModified(this.password));
+    if(this.isModified(this.password)){
+        return 
+    }
+    
     const hash =await bcrypt.hash(this.password,10);
+    console.log("Hashed Pass : ",hash);
     this.password=hash;
 
-    return next();
+    return 
 })
 
-userSchema.method.comparePassword=async function(password){
+userSchema.methods.comparePassword=async function(password){
 return await bcrypt.compare(password,this.password);
 }
 
